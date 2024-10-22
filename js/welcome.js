@@ -1,37 +1,40 @@
-fetch('https://api.qjqq.cn/api/Local')
-    .then(response => response.json())
-    .then(data => {
-        ipLocation = data;
-        showWelcome();
-    })
-    .catch(error => console.error('Error:', error));
-
-
+//get请求
+$.ajax({
+    type: 'get',
+    url: 'https://apis.map.qq.com/ws/location/v1/ip',
+    data: {
+        key: 'WNXBZ-E2UW4-VZNU4-DEI6B-XI5JF-MDBBU',
+        output: 'jsonp',
+    },
+    dataType: 'jsonp',
+    success: function (res) {
+        ipLocation = res;
+    }
+})
 function getDistance(e1, n1, e2, n2) {
-    const R = 6371;
-    const { sin, cos, asin, PI, hypot } = Math;
+    const R = 6371
+    const { sin, cos, asin, PI, hypot } = Math
     let getPoint = (e, n) => {
-        e *= PI / 180;
-        n *= PI / 180;
-        return { x: cos(n) * cos(e), y: cos(n) * sin(e), z: sin(n) };
-    };
+        e *= PI / 180
+        n *= PI / 180
+        return { x: cos(n) * cos(e), y: cos(n) * sin(e), z: sin(n) }
+    }
 
-    let a = getPoint(e1, n1);
-    let b = getPoint(e2, n2);
-    let c = hypot(a.x - b.x, a.y - b.y, a.z - b.z);
-    let r = asin(c / 2) * 2 * R;
+    let a = getPoint(e1, n1)
+    let b = getPoint(e2, n2)
+    let c = hypot(a.x - b.x, a.y - b.y, a.z - b.z)
+    let r = asin(c / 2) * 2 * R
     return Math.round(r);
 }
 
 function showWelcome() {
 
-    let dist = getDistance(121.413921, 31.089290, ipLocation.data.lng, ipLocation.data.lat); //修改自己的经度（121.413921）纬度（31.089290）
-    let pos = ipLocation.data.country;
-    let ip = ipLocation.ip;
+    let dist = getDistance(23.544204, 113.591899, ipLocation.result.location.lng, ipLocation.result.location.lat); //这里记得换成自己的经纬度
+    let pos = ipLocation.result.ad_info.nation;
+    let ip;
     let posdesc;
-
-    // 以下的代码需要根据新API返回的结果进行相应的调整
-    switch (ipLocation.data.country) {
+    //根据国家、省份、城市信息自定义欢迎语
+    switch (ipLocation.result.ad_info.nation) {
         case "日本":
             posdesc = "よろしく，一起去看樱花吗";
             break;
@@ -57,8 +60,9 @@ function showWelcome() {
             posdesc = "拾起一片枫叶赠予你";
             break;
         case "中国":
-            pos = ipLocation.data.prov + " " + ipLocation.data.city + " " + ipLocation.data.district;
-            switch (ipLocation.data.prov) {
+            pos = ipLocation.result.ad_info.province + " " + ipLocation.result.ad_info.city + " " + ipLocation.result.ad_info.district;
+            ip = ipLocation.result.ip;
+            switch (ipLocation.result.ad_info.province) {
                 case "北京市":
                     posdesc = "北——京——欢迎你~~~";
                     break;
@@ -87,7 +91,7 @@ function showWelcome() {
                     posdesc = "众所周知，中国只有两个城市";
                     break;
                 case "江苏省":
-                    switch (ipLocation.data.city) {
+                    switch (ipLocation.result.ad_info.city) {
                         case "南京市":
                             posdesc = "这是我挺想去的城市啦";
                             break;
@@ -103,7 +107,7 @@ function showWelcome() {
                     posdesc = "东风渐绿西湖柳，雁已还人未南归";
                     break;
                 case "河南省":
-                    switch (ipLocation.data.city) {
+                    switch (ipLocation.result.ad_info.city) {
                         case "郑州市":
                             posdesc = "豫州之域，天地之中";
                             break;
@@ -137,7 +141,7 @@ function showWelcome() {
                     posdesc = "遥望齐州九点烟，一泓海水杯中泻";
                     break;
                 case "湖北省":
-                    switch (ipLocation.data.city) {
+                    switch (ipLocation.result.ad_info.city) {
                         case "黄冈市":
                             posdesc = "红安将军县！辈出将才！";
                             break;
@@ -150,7 +154,7 @@ function showWelcome() {
                     posdesc = "74751，长沙斯塔克";
                     break;
                 case "广东省":
-                    switch (ipLocation.data.city) {
+                    switch (ipLocation.result.ad_info.city) {
                         case "广州市":
                             posdesc = "看小蛮腰，喝早茶了嘛~";
                             break;
@@ -230,20 +234,11 @@ function showWelcome() {
     try {
         //自定义文本和需要放的位置
         document.getElementById("welcome-info").innerHTML =
-            `欢迎来自 <b><span style="color: var(--kouseki-ip-color);font-size: var(--kouseki-gl-size)">${pos}</span></b> 的小友💖<br>${posdesc}🍂<br>当前位置距博主约 <b><span style="color: var(--kouseki-ip-color)">${dist}</span></b> 公里！<br>您的IP地址为：<b><span style="font-size: 12px;">${ip}</span></b><br>${timeChange} <br>`;
+            `欢迎来自 <b><span style="color: var(--kouseki-ip-color);font-size: var(--kouseki-gl-size)">${pos}</span></b> 的小友💖<br>${posdesc}🍂<br>当前位置距博主约 <b><span style="color: var(--kouseki-ip-color)">${dist}</span></b> 公里！<br>您的IP地址为：<b><span>${ip}</span></b><br>${timeChange} <br>`;
     } catch (err) {
-        console.log("Pjax无法获取元素");
+         console.log("Pjax无法获取元素")
     }
 }
-
-// Pjax完成页面切换的事件回调处理
-function handlePjaxComplete() {
-    showWelcome();
-}
-
-window.onload = function() {
-    showWelcome();
-
-    // 添加pjax:complete事件监听
-    document.addEventListener("pjax:complete", handlePjaxComplete);
-};
+window.onload = showWelcome;
+// 如果使用了pjax在加上下面这行代码
+document.addEventListener('pjax:complete', showWelcome);
